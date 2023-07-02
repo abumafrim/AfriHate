@@ -36,35 +36,23 @@ parser.add_argument('-i', '--input', required=True, type=str, help='csv/tsv file
 parser.add_argument('-o', '--output', default='', type=str, help='path to save the sampled tweets.')
 parser.add_argument('-t', '--sample_type', default='fraction', choices=['fraction', 'number'], help='type of tweets sampling (fraction of tweets or a number of tweets).')
 parser.add_argument('-n', '--no_of_samples', required=True, type=float, help='number of tweets to return per sample.')
-parser.add_argument('--sample_stopwords', action='store_true', help='use if tweets are sampled based on stopwords.')
+parser.add_argument('--sample_keywords', action='store_true', help='use if tweets are sampled based on keywords.')
 parser.add_argument('--sample_periods', action='store_true', help='use if tweets are sampled based on interesting time periods.')
-parser.add_argument('-s', '--stopwords', type=str, default='', help="stopwords file. required if '--sample_stopwords' option is used.")
+parser.add_argument('-s', '--keywords', type=str, default='', help="keywords file. required if '--sample_keywords' option is used.")
 parser.add_argument('-p', '--periods', type=str, default='', help="comma-seperated time periods for tweet sampling. supported formats include single dates such as YY, YY-MM and YY-MM-DD o range such as YY-MM-DD:YY-MM-DD or YY-MM:YY-MM or YY:YY. required if '--sample_periods' option is used.")
 
 args = parser.parse_args()
 
 if args.sample_type == 'fraction':
   assert args.no_of_samples > 0 and args.no_of_samples <= 1, 'sample fraction must be between 0 and 1'
-if args.sample_stopwords:
-  assert args.stopwords != '', 'sample_stopwords is used without providing stopwords file'
+if args.sample_keywords:
+  assert args.keywords != '', 'sample_keywords is used without providing keywords file'
 if args.sample_periods:
   assert args.periods != '', 'sample_periods is used without providing time periods'
 
-if not (args.sample_stopwords and args.sample_periods):
-  print('no sampling method is provided. please provide at least one of sampling based on stopwords or time periods')
+if not (args.sample_keywords and args.sample_periods):
+  print('no sampling method is provided. please provide at least one of sampling based on keywords or time periods')
   sys.exit(-1)
-
-if args.sample_stopwords:
-  try:
-    with open(args.stopwords, 'r') as f:
-      stopwords = f.read().splitlines()
-  except:
-    print('cannot read stopwords file. check and correct the file or file path')
-    sys.exit(-1)
-
-if args.sample_periods:
-  periods = ast.literal_eval(args.periods)
-  assert len(periods) != 0, 'empty time periods are provided'
 
 tweets_file = args.input
 
@@ -90,6 +78,22 @@ if args.sample_type == 'fraction':
   print('number of tweets to be sampled:', str(args.no_of_samples * 100) + '%' , 'of all tweets')
 else:
   print('number of tweets to be sampled:', args.no_of_samples , 'tweets')
+
+if args.sample_keywords:
+  try:
+    with open(args.keywords, 'r') as f:
+      keywords = f.read().splitlines()
+  except:
+    print('cannot read keywords file. check and correct the file or file path')
+    sys.exit(-1)
+
+  print('keywords:', keywords)
+
+if args.sample_periods:
+  periods = ast.literal_eval(args.periods)
+  assert len(periods) != 0, 'empty time periods are provided'
+
+  print('periods', periods)
 
 sampled_df = pd.concat([get_tweets_on_dates(df, periods, args.sample_type, args.no_of_samples), 
                         get_tweets_on_keywords(df, keywords, args.sample_type, args.no_of_samples)])
