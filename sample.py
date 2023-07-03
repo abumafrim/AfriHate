@@ -27,7 +27,7 @@ def get_tweets_on_keywords(df, keywords, type_of_sample='frac', no_of_sample=1):
   
   temp_df = pd.DataFrame()
   for keyword in keywords:
-    temp_df = pd.concat([temp_df, get_sample(df[df['created_at'].str.contains(keyword)], type_of_sample, no_of_sample)])
+    temp_df = pd.concat([temp_df, get_sample(df[df['text'].str.contains(keyword)], type_of_sample, no_of_sample)])
   
   return temp_df
 
